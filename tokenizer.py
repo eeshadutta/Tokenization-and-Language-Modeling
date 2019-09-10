@@ -22,7 +22,7 @@ for token in tokens:
         final_tokens.append(token)
     elif re.match('^([0-9]+)\.([0-9]+)$', token):
         final_tokens.append(token)
-    elif re.match('^([0-9]+):([0-9]+)$', token):
+    elif re.match('^([0-9]+):([0-9]+)$', token) or re.match('^([0-9]+)/([0-9]+)$', token):
         final_tokens.append(token)
     elif re.match('^#([a-zA-Z0-9_\-\.]+)$', token):
         final_tokens.append(token)
