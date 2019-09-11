@@ -9,6 +9,8 @@ def tokenize(filename):
     for line in contents:
         if line != '':
             line.strip()
+            line = '<s> ' + line + ' </s>'
+            line.strip()
             tokens = tokens + line.split(" ")
 
     punc = ['(', ')', '?', ':', ';', ',', '.', '!', '/', '-',
@@ -16,7 +18,9 @@ def tokenize(filename):
 
     final_tokens = []
     for token in tokens:
-        if re.match('^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$', token):
+        if token == '<s>' or token == '</s>':
+            final_tokens.append(token)
+        elif re.match('^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$', token):
             final_tokens.append(token)
         elif re.match('(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})', token):
             final_tokens.append(token)
@@ -50,7 +54,32 @@ def tokenize(filename):
     return final_tokens
 
 
+def ngrams(tokens, n):
+    words = ''
+    list_ngrams = []
+    counts = {}
+    for i in range(0, n):
+        words = words + ' ' + tokens[i]
+    words = words.strip()
+    list_ngrams.append(words)
+    for i in range(n, len(tokens)):
+        words = words.split(' ', 1)[1]
+        words = words + ' ' + tokens[i]
+        words = words.strip()
+        list_ngrams.append(words)
+
+    # print(len(list_ngrams))
+
+    for ng in list_ngrams:
+        if ng in counts:
+            counts[ng] += 1
+        else:
+            counts[ng] = 1
+    for c in counts:
+        print(c, counts[c])
+
+
+n = 4
 filename = sys.argv[1]
-final_tokens = tokenize(filename)
-for token in final_tokens:
-    print(token)
+tokens = tokenize(filename)
+ngrams(tokens, n)
