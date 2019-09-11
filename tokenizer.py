@@ -28,9 +28,8 @@ def tokenize(filename):
             final_tokens.append(token)
         elif re.match('^@([a-zA-Z0-9_\-\.]+)$', token):
             final_tokens.append(token)
-        elif re.match('^[AaPp]\.?[Mm]\.?', token):
-            if re.match('^([0-9]+)$', final_tokens[len(final_tokens) - 1]):
-                final_tokens.append(token)
+        elif re.match('^[AaPp]\.[Mm]\.', token):
+            final_tokens.append(token)
         else:
             token_list = re.sub(
                 r'[]!"$%&()+,./:;=?[\\^_`{|}~-]+', r' \g<0> ', token).strip().split(' ')
