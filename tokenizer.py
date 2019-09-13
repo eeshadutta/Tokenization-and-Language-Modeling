@@ -3,13 +3,17 @@ import re
 
 
 def tokenize(filename):
-    file = open(filename, "r")
-    contents = file.read().split('\n')
-    tokens = []
-    for line in contents:
-        if line != '':
-            line.strip()
-            tokens = tokens + line.split(" ")
+    # file = open(filename, "r")
+    # contents = file.read().split('\n')
+    # tokens = []
+    # for line in contents:
+    #     if line != '':
+    #         line.strip()
+    #         tokens = tokens + line.split(" ")
+
+    contents = [line.rstrip() for line in open(filename, 'r')]
+    init_tokens = [line.split(" ") for line in contents if line != '']
+    tokens = [item for sublist in init_tokens for item in sublist]
 
     punc = ['(', ')', '?', ':', ';', ',', '.', '!', '/', '-',
             '"', "'", '{', '}', '[', ']', '_', '+', '=']
@@ -51,5 +55,7 @@ def tokenize(filename):
 
 filename = sys.argv[1]
 final_tokens = tokenize(filename)
+tokenized_file = filename.split(".")[0] + "_tokenized.txt"
+op = open(tokenized_file, "w")
 for token in final_tokens:
-    print(token)
+    op.write(token + "\n")

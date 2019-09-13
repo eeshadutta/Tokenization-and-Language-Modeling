@@ -51,45 +51,63 @@ def tokenize_line(line):
     return final_tokens
 
 
-def ngrams(filename, n):
-    f = open(filename, 'r')
-    contents = f.read().lower().split('\n')
+def perplexity(line, n, ngram_counts):
+    tokens = tokenize_line(line)
+    length = len(tokens)
+    words = ''
     list_ngrams = []
-    for line in contents:
-        tokens = tokenize_line(line)
-        words = ''
-        try:
-            counts = {}
-            for i in range(0, n):
-                words = words + ' ' + tokens[i]
-            words = words.strip()
-            list_ngrams.append(words)
-            for i in range(n, len(tokens)):
-                words = words.split(' ', 1)[1]
-                words = words + ' ' + tokens[i]
-                words = words.strip()
-                list_ngrams.append(words)
-        except:
-            pass
 
+    for i in range(0, n):
+        words = words + ' ' + tokens[i]
+    words = words.strip()
+    list_ngrams.append(words)
+    for i in range(n, len(tokens)):
+        words = words.split(' ', 1)[1]
+        words = words + ' ' + tokens[i]
+        words = words.strip()
+        list_ngrams.append(words)
+
+    total_prob = 1.0
     for ng in list_ngrams:
-        if ng in counts:
-            counts[ng] += 1
-        else:
-            counts[ng] = 1
+        num = 0
+        den = 0
+        w = ng.split(' ')
+        for present_ng in ngram_counts:
+            ww = present_ng[0].strip().split(' ')
+            if w[:(n-1)] == ww[:(n-1)]:
+                den += 1
+            if w == ww:
+                num += 1
+        if num != 0 and den != 0:
+            total_prob = total_prob * num / den
 
-    counts_final = sorted(
-        counts.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)
-    for c in counts_final:
-        print(c[0], ":", c[1])
-    return counts_final
+    perp = 1 / total_prob
+    perp = perp**(float(1/length))
+
+    return perp
+
+
+def calculate_perplexity_file(filename, n, ngram_counts):
+    file = open(filename, 'r')
+    contents = file.read().split('\n')
+    for line in contents:
+        # try:
+        perp = perplexity(line, n, ngram_counts)
+        print(line, ":", perp)
+        # except:
+        # pass
 
 
 n = 4
-filename = sys.argv[1]
-counts_final = ngrams(filename, n)
 
-out_file = filename + "_" + n + "grams.txt"
-of = open(out_file, 'w')
-for c in counts_final:
-    of.write(c[0] + " : " + c[1])
+ngrams_file = "corpus1_4grams.txt"
+f = open(ngrams_file, 'r')
+contents = f.read().split('\n')
+ngram_counts = []
+for line in contents:
+    if line != '':
+        c = line.rsplit(":", 1)[1]
+        ng = line.rsplit(":", 1)[0]
+        ngram_counts.append((ng, c))
+
+calculate_perplexity_file(sys.argv[1], n, ngram_counts)
