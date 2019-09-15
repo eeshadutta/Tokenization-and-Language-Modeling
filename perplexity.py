@@ -11,7 +11,7 @@ def tokenize_line(line):
     if line != '':
         line.strip()
         line = '<s> ' + line + ' </s>'
-        line.strip()
+        line = line.strip().lower()
         tokens = line.split(" ")
 
     for token in tokens:
@@ -21,7 +21,7 @@ def tokenize_line(line):
             final_tokens.append(token)
         elif re.match('(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})', token):
             final_tokens.append(token)
-        elif re.match('^([0-9]+)\.([0-9]+)$', token):
+        elif re.match('^([0-9]+)\.([0-9]+)', token):
             final_tokens.append(token)
         elif re.match('^([0-9]+):([0-9]+)$', token) or re.match('^([0-9]+)/([0-9]+)$', token):
             final_tokens.append(token)
@@ -87,22 +87,29 @@ def perplexity(line, n, ngram_counts):
     return perp
 
 
-def calculate_perplexity_file(filename, n, ngram_counts):
-    file = open(filename, 'r')
-    contents = file.read().split('\n')
+def calculate_perplexity_file(filename, n, ngram_counts, ngrams_file):
+    contents = [line.rstrip() for line in open(filename, 'r')]
+    out_file = ngrams_file.split(
+        ".")[0] + "-" + filename.split(".")[0] + "-perplexity.txt"
+    of = open(out_file, 'w')
+    perps = 0
+    num_lines = 0
     for line in contents:
-        # try:
-        perp = perplexity(line, n, ngram_counts)
-        print(line, ":", perp)
-        # except:
-        # pass
+        try:
+            perp = perplexity(line, n, ngram_counts)
+            perps += perp
+            num_lines += 1
+            print(line, "\t", perp)
+            of.write(line + "\t" + str(perp) + "\n")
+        except:
+            pass
+    of.write(str(perps / num_lines))
 
 
 n = 4
 
 ngrams_file = "corpus1_4grams.txt"
-f = open(ngrams_file, 'r')
-contents = f.read().split('\n')
+contents = [line.rstrip() for line in open(ngrams_file, 'r')]
 ngram_counts = []
 for line in contents:
     if line != '':
@@ -110,4 +117,4 @@ for line in contents:
         ng = line.rsplit(":", 1)[0]
         ngram_counts.append((ng, c))
 
-calculate_perplexity_file(sys.argv[1], n, ngram_counts)
+calculate_perplexity_file(sys.argv[1], n, ngram_counts, ngrams_file)
